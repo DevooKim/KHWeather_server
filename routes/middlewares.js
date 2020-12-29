@@ -9,60 +9,6 @@ dayjs.extend(UTC);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Seoul");
 
-<<<<<<< HEAD
-exports.getYesterdays = async (req, res, next) => {
-    const kor = dayjs.tz();
-    const { lat, lon } = req.params;
-    const key = req.key;
-    const location = { lat: lat, lon: lon }
-
-    let unixTime = await getUnixTime(1);
-    let yesterdays = await rqHistory(location, unixTime);
-    console.log(yesterdays.length);
-
-    if (kor.hour() >= 9) {
-        unixTime = await getUnixTime(2);
-        const secondYesterdays = await rqHistory(location, unixTime);
-        yesterdays = yesterdays.concat(secondYesterdays)
-    }
-    console.log(yesterdays.length);
-    
-    console.log("yesterdays caching...");
-    yesterdays = await setCache(key, yesterdays);
-    req.yesterdays = yesterdays;
-    next();  
-}
-
-exports.getBefores = async (req, res, next) => {
-    const { lat, lon } = req.params;
-    const key = req.key;
-
-    const location = { lat: lat, lon: lon }
-    const unixTime = await getUnixTime(0);
-    let befores = await rqHistory(location, unixTime);
-
-    console.log("befores caching...");
-    befores = await setCache(key, befores);
-    req.befores = befores;
-    next();
-}
-
-exports.getForecasts = async (req, res, next) => {
-    const { lat, lon } = req.params;
-    const key = req.key;
-
-    const location = { lat: lat, lon: lon }
-    let forecasts = await rqForecasts(location);
-    
-    const kor = dayjs.tz();
-    const start = 3 - ( kor.hour() % 3 );
-
-    console.log("forecasts caching...");
-    forecasts = await setCache(key, forecasts, start);
-    req.forecasts = forecasts;
-    next();
-}
-=======
 exports.getWeathers = async (req, res, next) => {
   const time = dayjs.tz();
   const offset = 3 - (time.hour() % 3);
@@ -92,7 +38,6 @@ exports.getWeathers = async (req, res, next) => {
 
   winston.info("daily caching...");
   const dData = setCache(dayjs, key, daily, 0, 1);
->>>>>>> main
 
   req.yesterdays = yData;
   req.befores = bData;
