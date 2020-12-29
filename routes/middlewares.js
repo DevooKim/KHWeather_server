@@ -12,7 +12,8 @@ dayjs.tz.setDefault("Asia/Seoul");
 exports.getWeathers = async (req, res, next) => {
   const time = dayjs.tz();
   const offset = 3 - (time.hour() % 3);
-  const { lat, lon } = req.body;
+  // const { lat, lon } = req.body;
+  const { lat, lon } = req.params;
   const location = { lat: lat, lon: lon };
   const key = req.key;
 
