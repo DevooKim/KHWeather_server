@@ -1,106 +1,92 @@
-const redis = require('redis')
-const dotenv = require('dotenv');
-const winston = require('../../config/winston')
-const dayjs = require('dayjs')
-const UTC = require('dayjs/plugin/utc')
-const timezone = require('dayjs/plugin/timezone')
+const redis = require("redis");
+const dotenv = require("dotenv");
+const winston = require("../../config/winston");
 
-dayjs.extend(UTC);
-dayjs.extend(timezone);
-dayjs.tz.setDefault("Asia/Seoul")
-
-const ext = 60;
+const EX = 8;
 
 dotenv.config();
 
 const client = redis.createClient(
-    process.env.REDIS_PORT,
-    process.env.REDIS_ADDRESS
+  process.env.REDIS_PORT,
+  process.env.REDIS_ADDRESS
 );
 
-client.on('error', (err) => {
-    console.log("redis Error: " + err);
+client.on("error", (err) => {
+  winston.info("redis Error: " + err);
 });
 
-exports.isCache = async (req, res, next) => {
-    const key = await getKey(req.params.lat, req.params.lon);
-    req.key = key;
+exports.isCache = (req, res, next) => {
+  const key = getKey(req.body.lat, req.body.lon);
+  req.key = key;
 
-    await client.lrange(key, 0, -1, async (err, arr) => {
-        if (err) throw err;
-        if(arr.length !== 0) {
-            // console.log(arr[0])
-            // const data = JSON.parse(arr);
-            winston.info("call cache ok");
-            const weathers = await parseData(arr);
-            res.send(weathers);
+  winston.info(`check cache ${key}`);
+  client.lrange(key, 0, -1, (err, arr) => {
+    if (err) throw err;
 
-        } else {
-            next();
-        }
-    })
-}
+    if (arr.length !== 0) {
+      const weather = parseData(arr);
+      winston.info("call cache OK");
+      res.send(weather);
+    } else {
+      winston.info("not cached");
+      next();
+    }
+  });
+};
 
-exports.setCache = (key, body, start = 0) => {
-    const result = []
-    try {
-        for (let i = start; i < body.length; i += 3) {
-            const data = {
-                dt: body[i].dt,
-                temp: body[i].temp,
-                feels_like: body[i].feels_like,
-                clouds: body[i].clouds,
-                rain: body[i].rain,
-                snow: body[i].snow,
-                weather: body[i].weather
-            }
+exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
+  const result = [];
+  try {
+    for (let i = offset; i < body.length; i += iter) {
+      const data = {
+        dt: dayjs.unix(body[i].dt).tz().format(),
+        temp: body[i].temp,
+        feels_like: body[i].feels_like,
+        humidity: body[i].humidity,
+        clouds: body[i].clouds,
+        visibility: body[i].visibility,
+        rain: body[i].rain,
+        snow: body[i].snow,
+        weather: body[i].weather,
+      };
 
-            result.push(data);
-            client.rpush(key, JSON.stringify(data));
-        }
-        
-        console.log("set Cache OK");
-        client.expire(key, ext);
-        
-    } catch (error) {
-        console.error("setCache Error: " + error);
+      result.push(data);
+      client.rpush(key, JSON.stringify(data));
     }
 
-    return result;
+    winston.info("set Cache OK");
+    client.expire(key, EX);
+  } catch (error) {
+    winston.error("setCache Error: " + error);
+  }
+
+  return result;
+};
+
+function parseData(data) {
+  const weathers = {
+    yesterdays: [],
+    todays: [],
+    tomorrows: [],
+    daily: [],
+  };
+
+  weathers.yesterdays = data.slice(5, 13).map((v) => {
+    return JSON.parse(v);
+  });
+  weathers.todays = data.slice(13, 21).map((v) => {
+    return JSON.parse(v);
+  });
+  weathers.tomorrows = data.slice(21, 30).map((v) => {
+    return JSON.parse(v);
+  });
+  weathers.daily = data.slice(data.length - 8, data.length).map((v) => {
+    return JSON.parse(v);
+  });
+
+  return weathers;
 }
 
-async function parseData(data) {
-    const weathers = {
-        "yesterdays": [],
-        "todays": [],
-        "tomorrows": [],
-    }
-
-    winston.info("yesterdays")
-    weathers.yesterdays = data.slice(5, 13).map((v) => {
-        winston.info(dayjs.unix(JSON.parse(v).dt).tz().format());
-        return dayjs.unix(JSON.parse(v).dt).tz().hour();
-    });
-    winston.info("todays")
-    weathers.todays = data.slice(13, 21).map((v) => {
-        winston.info(dayjs.unix(JSON.parse(v).dt).tz().format());
-        return dayjs.unix(JSON.parse(v).dt).tz().hour();
-    });
-    winston.info("tomorrows")
-    weathers.tomorrows = data.slice(21, 30).map((v) => {
-        winston.info(dayjs.unix(JSON.parse(v).dt).tz().format());
-        return dayjs.unix(JSON.parse(v).dt).tz().hour();
-    });
-
-
-    // weathers.yesterdays = data.map((v) => {
-    //     winston.info(dayjs.unix(JSON.parse(v).dt).tz());
-    //     return dayjs.unix(JSON.parse(v).dt).tz().hour(); 
-    // })
-
-    return weathers
-}
-
-async function getKey(lat, lon) {
-    return Number(lat).toFixed(2) + Number(lon).toFixed(2);
+function getKey(lat, lon) {
+  return Number(lat).toFixed(2) + Number(lon).toFixed(2);
 }

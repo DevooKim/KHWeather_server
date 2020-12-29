@@ -1,45 +1,65 @@
-const rp = require('request-promise-native')
-const dotenv = require('dotenv')
+const rp = require("request-promise-native");
+const dotenv = require("dotenv");
 
 dotenv.config();
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
-exports.rqHistory = async (location, time) => {
-    let historys = undefined;
-    await rp({
-        uri: "https://api.openweathermap.org/data/2.5/onecall/timemachine",
-            qs: {
-                lat: location.lat,
-                lon: location.lon,
-                dt: time,
-                appid: apiKey
-            }
-        }, (response, body) => {
+exports.getHistory = async (time, location, callback) => {
+  const unixTime = {
+    today: callback(time, 0),
+    yesterday: callback(time, 1),
+    twoDayAgo: callback(time, 2),
+  };
 
-            const data = JSON.parse(body.body);
-            if (data.hourly === undefined) {
-                historys = [data.current];
-            } else {
-                historys = data.hourly;
-            }
-    });
+  let [befores, yesterdays] = await Promise.all([
+    rqHistory(location, unixTime.today),
+    rqHistory(location, unixTime.yesterday),
+  ]);
 
-    return historys;
+  if (time.hour() >= 9) {
+    const secondYesterdays = await rqHistory(location, unixTime.twoDayAgo);
+    yesterdays = yesterdays.concat(secondYesterdays);
+  }
+
+  return [yesterdays, befores];
+};
+
+exports.getForecasts = async (location) => {
+  return await rqForecasts(location);
+};
+
+async function rqHistory(location, time) {
+  const response = await rp({
+    uri: "https://api.openweathermap.org/data/2.5/onecall/timemachine",
+    qs: {
+      lat: location.lat,
+      lon: location.lon,
+      dt: time,
+      appid: apiKey,
+    },
+  });
+
+  const data = JSON.parse(response);
+
+  if (data.hourly === undefined) {
+    return [data.current];
+  } else {
+    return data.hourly;
+  }
 }
 
-exports.rqForecasts = async (location) => {
-    let fores = undefined;
-    await rp({
-        uri: "https://api.openweathermap.org/data/2.5/onecall",
-        qs: {
-            lat: location.lat,
-            lon: location.lon,
-            exclude: "current,minutely,daily,alerts",
-            appid: apiKey
-        }
-    }, (response, body) => {
-        const data = JSON.parse(body.body);
-        fores = data.hourly;
-    });
-    return fores;
+async function rqForecasts(location) {
+  const data = await rp({
+    uri: "https://api.openweathermap.org/data/2.5/onecall",
+    qs: {
+      lat: location.lat,
+      lon: location.lon,
+      exclude: "current,minutely,alerts",
+      appid: apiKey,
+    },
+  });
+
+  const result = JSON.parse(data);
+
+  return [result.hourly, result.daily];
 }
