@@ -1,7 +1,7 @@
 const rp = require("request-promise-native");
-const dotenv = require("dotenv");
+const env = require("../../config/config");
+env();
 
-dotenv.config();
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
 exports.getHistory = async (time, location, callback) => {

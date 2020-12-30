@@ -1,12 +1,12 @@
 const express = require("express");
 const morgan = require("morgan");
-const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
 
 const weatherRouter = require("./routes/weatherRouter");
 
-dotenv.config();
+const env = require("./config/config");
+env();
 
 const app = express();
 app.set("port", process.env.PORT || 8001);
@@ -15,7 +15,8 @@ app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: process.env.CORS_ADDRESS }));
+
 app.get("/test", (req, res, next) => {
   console.log("test");
   res.send("hello KHW");
