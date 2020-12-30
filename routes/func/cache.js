@@ -1,9 +1,9 @@
 const redis = require("redis");
 const env = require("../../config/config");
 const winston = require("../../config/winston");
-const EX = process.env.CACHE_EXPIRE;
 
 env();
+const EX = process.env.CACHE_EXPIRE;
 
 const client = redis.createClient(
   process.env.REDIS_PORT,

@@ -38,10 +38,9 @@ app.use((err, req, res, next) => {
 
 app.listen(app.get("port"), (err) => {
   if (!err) {
+    console.log("NODE_ENV: " + process.env.NODE_ENV);
     console.log(app.get("port"), "번 포트에서 대기 중");
-    //loggingRouter;
   } else {
-    console.log("서버 오류");
     throw new Error("서버 오류", err);
   }
 });
