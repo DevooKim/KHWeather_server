@@ -38,9 +38,19 @@ exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
   const result = [];
   try {
     for (let i = offset; i < body.length; i += iter) {
+      let temp = body[i].temp;
+      if (typeof temp === "object") {
+        for (let key in temp) {
+          temp[key] = KtoC(temp[key]);
+        }
+      } else {
+        temp = KtoC(temp);
+      }
+
       const data = {
         dt: dayjs.unix(body[i].dt).tz().format(),
-        temp: body[i].temp,
+        // temp: body[i].temp,
+        temp: temp,
         feels_like: body[i].feels_like,
         humidity: body[i].humidity,
         clouds: body[i].clouds,
@@ -89,4 +99,8 @@ function parseData(data) {
 
 function getKey(lat, lon) {
   return Number(lat).toFixed(2) + Number(lon).toFixed(2);
+}
+
+function KtoC(temp) {
+  return Math.round(temp - 273.15);
 }
