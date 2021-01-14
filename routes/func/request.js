@@ -1,3 +1,4 @@
+const { unix } = require("dayjs");
 const rp = require("request-promise-native");
 const env = require("../../config/config");
 env();
@@ -15,10 +16,9 @@ exports.getHistory = async (time, location, callback) => {
     rqHistory(location, unixTime.today),
     rqHistory(location, unixTime.yesterday),
   ]);
-
   if (time.hour() >= 9) {
     const secondYesterdays = await rqHistory(location, unixTime.twoDayAgo);
-    yesterdays = yesterdays.concat(secondYesterdays);
+    yesterdays = secondYesterdays.concat(yesterdays);
   }
 
   return [yesterdays, befores];
