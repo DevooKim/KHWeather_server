@@ -46,19 +46,8 @@ exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
       } else {
         temp = KtoC(temp);
       }
-
-      const data = {
-        dt: dayjs.unix(body[i].dt).tz().format(),
-        // temp: body[i].temp,
-        temp: temp,
-        feels_like: body[i].feels_like,
-        humidity: body[i].humidity,
-        clouds: body[i].clouds,
-        visibility: body[i].visibility,
-        rain: body[i].rain,
-        snow: body[i].snow,
-        weather: body[i].weather,
-      };
+      const dt = dayjs.unix(body[i].dt).tz().format();
+      const data = { ...body[i], dt, temp };
 
       result.push(data);
       client.rpush(key, JSON.stringify(data));
