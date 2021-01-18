@@ -15,7 +15,6 @@ client.on("error", (err) => {
 });
 
 exports.isCache = (req, res, next) => {
-  //   const key = getKey(req.body.lat, req.body.lon);
   const key = getKey(req.params.lat, req.params.lon);
   req.key = key;
 
