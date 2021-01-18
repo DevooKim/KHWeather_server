@@ -49,6 +49,6 @@ exports.getWeathers = async (req, res, next) => {
 };
 
 function getUnixTime(time, offset) {
-  // time = time.subtract(2, 'second');   //openweatherAPI server is late 2seconds
+  time = time.subtract(2, "second"); //openweatherAPI server is late 2seconds
   return Math.floor(time.subtract(offset, "day") / 1000);
 }
