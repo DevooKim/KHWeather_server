@@ -49,6 +49,8 @@ exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
       const dt = dayjs.unix(body[i].dt).tz().format();
       const data = { ...body[i], dt, temp };
 
+      console.log("Data");
+      console.log(data);
       result.push(data);
       client.rpush(key, JSON.stringify(data));
     }
@@ -76,12 +78,13 @@ function parseData(data) {
   weathers.todays = data.slice(13, 21).map((v) => {
     return JSON.parse(v);
   });
-  weathers.tomorrows = data.slice(21, 30).map((v) => {
+  weathers.tomorrows = data.slice(21, 29).map((v) => {
     return JSON.parse(v);
   });
-  weathers.daily = data.slice(data.length - 8, data.length).map((v) => {
+  weathers.daily = data.slice(data.length - 8, data.length - 1).map((v) => {
     return JSON.parse(v);
   });
+  weathers.current = JSON.parse(data[data.length - 1]);
 
   return weathers;
 }

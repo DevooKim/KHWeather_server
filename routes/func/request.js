@@ -54,12 +54,12 @@ async function rqForecasts(location) {
     qs: {
       lat: location.lat,
       lon: location.lon,
-      exclude: "current,minutely,alerts",
+      exclude: "minutely,alerts",
       appid: apiKey,
     },
   });
 
   const result = JSON.parse(data);
 
-  return [result.hourly, result.daily];
+  return [result.current, result.hourly, result.daily];
 }

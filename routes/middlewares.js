@@ -26,7 +26,7 @@ exports.getWeathers = async (req, res, next) => {
   ]);
 
   const [yesterdays, befores] = history;
-  const [forecasts, daily] = future;
+  const [current, forecasts, daily] = future;
 
   winston.info("yesterdays caching...");
   const yData = setCache(dayjs, key, yesterdays);
@@ -40,10 +40,13 @@ exports.getWeathers = async (req, res, next) => {
   winston.info("daily caching...");
   const dData = setCache(dayjs, key, daily, 0, 1);
 
+  const cData = setCache(dayjs, key, [current]);
+
   req.yesterdays = yData;
   req.befores = bData;
   req.forecasts = fData;
   req.daily = dData;
+  req.current = cData;
 
   next();
 };
