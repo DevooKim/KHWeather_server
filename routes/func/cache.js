@@ -1,6 +1,13 @@
 const redis = require("redis");
 const env = require("../../config/config");
 const winston = require("../../config/winston");
+const dayjs = require("dayjs");
+const UTC = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
+
+dayjs.extend(UTC);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Seoul");
 
 env();
 const EX = process.env.CACHE_EXPIRE;
@@ -19,11 +26,14 @@ exports.isCache = (req, res, next) => {
   req.key = key;
 
   winston.info(`check cache ${key}`);
+
+  const time = dayjs.tz().format();
+  client.hmset(key, "lastUpdate", time);
   client.lrange(key, 0, -1, (err, arr) => {
     if (err) throw err;
 
     if (arr.length !== 0) {
-      const weather = parseData(arr);
+      const weather = parseData(arr, key);
       winston.info("call cache OK");
       res.send(weather);
     } else {
@@ -65,13 +75,16 @@ exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
   return result;
 };
 
-function parseData(data) {
+async function parseData(data, key) {
   const weathers = {
+    lastUpdate: "",
     yesterdays: [],
     todays: [],
     tomorrows: [],
     daily: [],
   };
+
+  weathers.lastUpdate = await client.hmget(key, "lastUpdate");
 
   weathers.yesterdays = data.slice(5, 13).map((v) => {
     return JSON.parse(v);
