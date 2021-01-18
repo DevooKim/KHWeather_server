@@ -39,18 +39,20 @@ exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
   try {
     for (let i = offset; i < body.length; i += iter) {
       let temp = body[i].temp;
+      let feels_like = body[i].feels_like;
       if (typeof temp === "object") {
         for (let key in temp) {
           temp[key] = KtoC(temp[key]);
+          feels_like[key] = KtoC(feels_like[key]);
         }
       } else {
         temp = KtoC(temp);
+        feels_like = KtoC(feels_like);
       }
-      const dt = dayjs.unix(body[i].dt).tz().format();
-      const data = { ...body[i], dt, temp };
 
-      console.log("Data");
-      console.log(data);
+      const dt = dayjs.unix(body[i].dt).tz().format();
+      const data = { ...body[i], dt, temp, feels_like };
+
       result.push(data);
       client.rpush(key, JSON.stringify(data));
     }
