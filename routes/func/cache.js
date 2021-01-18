@@ -1,13 +1,6 @@
 const redis = require("redis");
 const env = require("../../config/config");
 const winston = require("../../config/winston");
-const dayjs = require("dayjs");
-const UTC = require("dayjs/plugin/utc");
-const timezone = require("dayjs/plugin/timezone");
-
-dayjs.extend(UTC);
-dayjs.extend(timezone);
-dayjs.tz.setDefault("Asia/Seoul");
 
 env();
 const EX = process.env.CACHE_EXPIRE;
@@ -26,16 +19,11 @@ exports.isCache = (req, res, next) => {
   req.key = key;
 
   winston.info(`check cache ${key}`);
-
-  const time = dayjs.tz().format();
-  client.hmset(key, "lastUpdate", time);
-  client.lrange(key, 0, -1, (err, arr) => {
+  client.hgetall(key, (err, obj) => {
     if (err) throw err;
-
-    if (arr.length !== 0) {
-      const weather = parseData(arr, key);
-      winston.info("call cache OK");
-      res.send(weather);
+    if (obj) {
+      winston.info("call cache");
+      res.send(JSON.parse(obj.data));
     } else {
       winston.info("not cached");
       next();
@@ -43,70 +31,12 @@ exports.isCache = (req, res, next) => {
   });
 };
 
-exports.setCache = (dayjs, key, body, offset = 0, iter = 3) => {
-  const result = [];
-  try {
-    for (let i = offset; i < body.length; i += iter) {
-      let temp = body[i].temp;
-      let feels_like = body[i].feels_like;
-      if (typeof temp === "object") {
-        for (let key in temp) {
-          temp[key] = KtoC(temp[key]);
-          feels_like[key] = KtoC(feels_like[key]);
-        }
-      } else {
-        temp = KtoC(temp);
-        feels_like = KtoC(feels_like);
-      }
+exports.setCache = (key, data) => {
+  client.hset(key, "data", JSON.stringify(data));
 
-      const dt = dayjs.unix(body[i].dt).tz().format();
-      const data = { ...body[i], dt, temp, feels_like };
-
-      result.push(data);
-      client.rpush(key, JSON.stringify(data));
-    }
-
-    winston.info("set Cache OK");
-    client.expire(key, EX);
-  } catch (error) {
-    winston.error("setCache Error: " + error);
-  }
-
-  return result;
+  client.expire(key, EX);
 };
-
-async function parseData(data, key) {
-  const weathers = {
-    lastUpdate: "",
-    yesterdays: [],
-    todays: [],
-    tomorrows: [],
-    daily: [],
-  };
-
-  weathers.lastUpdate = await client.hmget(key, "lastUpdate");
-
-  weathers.yesterdays = data.slice(5, 13).map((v) => {
-    return JSON.parse(v);
-  });
-  weathers.todays = data.slice(13, 21).map((v) => {
-    return JSON.parse(v);
-  });
-  weathers.tomorrows = data.slice(21, 29).map((v) => {
-    return JSON.parse(v);
-  });
-  weathers.daily = data.slice(data.length - 8, data.length - 1).map((v) => {
-    return JSON.parse(v);
-  });
-  weathers.current = JSON.parse(data[data.length - 1]);
-
-  return weathers;
-}
 
 function getKey(lat, lon) {
   return Number(lat).toFixed(2) + Number(lon).toFixed(2);
-}
-
-function KtoC(temp) {
-  return Math.round(temp - 273.15);
 }
