@@ -3,7 +3,7 @@ const UTC = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const { getHistory, getForecasts } = require("./func/request");
 const { setCache } = require("./func/cache");
-const { filterData, parseData, getUnixTime } = require("../utils/funcData");
+const { filterData, parseData, getUnixTime } = require("../utils/utils");
 const winston = require("../config/winston");
 
 dayjs.extend(UTC);
