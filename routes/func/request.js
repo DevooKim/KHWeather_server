@@ -20,7 +20,7 @@ exports.getHistory = async (time, location, callback) => {
     yesterdays = secondYesterdays.concat(yesterdays);
   }
 
-  return [yesterdays, befores];
+  return { yesterdays, befores };
 };
 
 exports.getForecasts = async (location) => {
@@ -60,5 +60,9 @@ async function rqForecasts(location) {
 
   const result = JSON.parse(data);
 
-  return [result.current, result.hourly, result.daily];
+  return {
+    current: result.current,
+    forecasts: result.hourly,
+    daily: result.daily,
+  };
 }

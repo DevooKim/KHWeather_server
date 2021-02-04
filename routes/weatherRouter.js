@@ -9,4 +9,6 @@ router.get("/:lat/:lon", isCache, getWeathers, async (req, res) => {
   res.send(req.weathers);
 });
 
+router.get("/:lat/:lon/new", isCache, async (req, res) => {});
+
 module.exports = router;

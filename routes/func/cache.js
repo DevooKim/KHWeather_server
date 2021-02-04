@@ -17,7 +17,6 @@ client.on("error", (err) => {
 exports.isCache = (req, res, next) => {
   const key = getKey(req.params.lat, req.params.lon);
   req.key = key;
-
   winston.info(`check cache>> lat: ${req.params.lat} lon: ${req.params.lon}`);
   client.hgetall(key, (err, obj) => {
     if (err) throw err;

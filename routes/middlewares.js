@@ -1,16 +1,10 @@
-const dayjs = require("dayjs");
-const UTC = require("dayjs/plugin/utc");
-const timezone = require("dayjs/plugin/timezone");
 const { getHistory, getForecasts } = require("./func/request");
 const { setCache } = require("./func/cache");
 const winston = require("../config/winston");
-
-dayjs.extend(UTC);
-dayjs.extend(timezone);
-dayjs.tz.setDefault("Asia/Seoul");
+const { getDate } = require("./func/getDate");
 
 exports.getWeathers = async (req, res, next) => {
-  const time = dayjs.tz();
+  const time = getDate().tz();
   const offset = 3 - (time.hour() % 3);
   const { lat, lon } = req.params;
   const location = { lat: lat, lon: lon };
@@ -21,19 +15,12 @@ exports.getWeathers = async (req, res, next) => {
     getForecasts(location),
   ]);
 
-  const [yesterdays, befores] = history;
-  const [current, forecasts, daily] = future;
+  const { yesterdays, befores } = history;
+  const { current, forecasts, daily } = future;
 
-  winston.info("yesterdays caching...");
   const yData = filterData(yesterdays);
-
-  winston.info("befores caching...");
   const bData = filterData(befores);
-
-  winston.info("forecasts caching...");
   const fData = filterData(forecasts, offset);
-
-  winston.info("daily caching...");
   const dData = filterData(daily, 0, 1);
 
   const cData = filterData([current]);
@@ -41,7 +28,7 @@ exports.getWeathers = async (req, res, next) => {
   let parse = parseData({ yData, bData, fData, dData, cData });
   parse = { lastUpdate: time.format(), ...parse };
   setCache(key, parse);
-
+  winston.info("caching ok...");
   req.weathers = parse;
 
   next();
@@ -70,7 +57,7 @@ function filterData(body, offset = 0, iter = 3) {
     for (let i = offset; i < body.length; i += iter) {
       let temp = body[i].temp;
       let feels_like = body[i].feels_like;
-      const dt = dayjs.unix(body[i].dt).tz().format();
+      const dt = getDate().unix(body[i].dt).tz().format();
 
       if (typeof temp === "object") {
         for (let key in temp) {
