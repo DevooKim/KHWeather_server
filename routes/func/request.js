@@ -4,11 +4,11 @@ env();
 
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
-exports.getHistory = async (time, location, callback) => {
+exports.getHistory = async (time, location, getUnixTime) => {
   const unixTime = {
-    today: callback(time, 0),
-    yesterday: callback(time, 1),
-    twoDayAgo: callback(time, 2),
+    today: getUnixTime(time, 0),
+    yesterday: getUnixTime(time, 1),
+    twoDayAgo: getUnixTime(time, 2),
   };
 
   let [befores, yesterdays] = await Promise.all([
@@ -17,7 +17,7 @@ exports.getHistory = async (time, location, callback) => {
   ]);
   if (time.hour() >= 9) {
     const secondYesterdays = await rqHistory(location, unixTime.twoDayAgo);
-    yesterdays = secondYesterdays.concat(yesterdays);
+    yesterdays = [...yesterdays, ...secondYesterdays];
   }
 
   return { yesterdays, befores };
