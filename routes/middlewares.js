@@ -1,5 +1,5 @@
 const { getHistory, getForecasts } = require("./utils/request");
-const {filterData, getUnixTime} = require('../utils/utils')
+const { filterData, getUnixTime } = require("../utils/utils");
 const winston = require("../config/winston");
 const { getDate } = require("../utils/utils");
 const client = require("./config/client");
@@ -46,7 +46,7 @@ exports.getWeathers = async (req, res, next) => {
     tData,
     dData,
     cData,
-    lastUpdate: time.format(),
+    lastUpdate: time,
   };
 
   next();

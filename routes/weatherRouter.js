@@ -1,7 +1,10 @@
 const express = require("express");
 const { getWeathers, isCache } = require("./middlewares");
 const { setCache } = require("./utils/caching");
-const { parseData } = require("../utils/utils");
+const {
+  parseToIndividualObject,
+  parseToCombineArray,
+} = require("../utils/parseData");
 
 const router = express.Router();
 
@@ -11,14 +14,16 @@ router.use("/:lat/:lon", isCache, getWeathers, async (req, res, next) => {
 });
 
 router.get("/:lat/:lon", (req, res) => {
-  const weathers = parseData(req.filterData);
+  const weathers = parseToIndividualObject(req.filterData);
   setCache(req.key, weathers);
 
   res.send(weathers);
 });
 
-router.get("/:lat/:lon/new", async (req, res) => {
-  res.send(req.filterData);
+router.get("/:lat/:lon/parse", async (req, res) => {
+  const weathers = parseToCombineArray(req.filterData);
+  setCache(req.key, weathers);
+  res.send(weathers);
 });
 
 module.exports = router;
