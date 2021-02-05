@@ -1,7 +1,24 @@
-const { getHistory, getForecasts } = require("./func/request");
-const { setCache } = require("./func/cache");
+const { getHistory, getForecasts } = require("./utils/request");
 const winston = require("../config/winston");
-const { getDate } = require("./func/getDate");
+const { getDate } = require("./utils/getDate");
+const client = require("./config/client");
+
+exports.isCache = (req, res, next) => {
+  const key = getKey(req.params.lat, req.params.lon);
+  req.key = key;
+  console.log("test");
+  winston.info(`check cache>> lat: ${req.params.lat} lon: ${req.params.lon}`);
+  client.hgetall(key, (err, obj) => {
+    if (err) throw err;
+    if (obj) {
+      winston.info("call cache");
+      res.send(JSON.parse(obj.data));
+    } else {
+      winston.info("not cached");
+      next();
+    }
+  });
+};
 
 exports.getWeathers = async (req, res, next) => {
   const time = getDate().tz();
@@ -16,22 +33,54 @@ exports.getWeathers = async (req, res, next) => {
   ]);
 
   const { yesterdays, befores } = history;
-  const { current, forecasts, daily } = future;
+  const { current, tomorrows, daily } = future;
+  console.log(tomorrows);
 
   const yData = filterData(yesterdays);
   const bData = filterData(befores);
-  const fData = filterData(forecasts, offset);
+  const tData = filterData(tomorrows, offset);
   const dData = filterData(daily, 0, 1);
 
   const cData = filterData([current]);
 
-  let parse = parseData({ yData, bData, fData, dData, cData });
-  parse = { lastUpdate: time.format(), ...parse };
-  setCache(key, parse);
-  winston.info("caching ok...");
-  req.weathers = parse;
+  req.filterData = {
+    yData,
+    bData,
+    tData,
+    dData,
+    cData,
+    lastUpdate: time.format(),
+  };
+
+  // let parse = parseData({ yData, bData, fData, dData, cData });
+  // parse = { lastUpdate: time.format(), ...parse };
+  // setCache(key, parse);
+  // winston.info("caching ok...");
+  // req.weathers = parse;
 
   next();
+};
+
+exports.parseDataDefault = (req, res, next) => {
+  const { yData, bData, tData, dData, cData, lastUpdate } = req.filterData;
+  const bLength = bData.length;
+  const fIndex = 8 - (bLength - 5);
+
+  const yesterdays = [...yData.slice(5, 8), ...bData.slice(0, 5)]; //index fix
+  const todays = [...bData.slice(5, bLength), ...fData.slice(0, fIndex)];
+  const tomorrows = fData.slice(fIndex, fIndex + 8);
+
+  const daily = dData;
+  const current = cData;
+
+  req.weathers = {
+    lastUpdate,
+    yesterdays,
+    todays,
+    tomorrows,
+    daily,
+    current,
+  };
 };
 
 function parseData(data) {
@@ -49,6 +98,10 @@ function parseData(data) {
   const current = data.cData;
 
   return { yesterdays, todays, tomorrows, daily, current };
+}
+
+function getKey(lat, lon) {
+  return Number(lat).toFixed(2) + Number(lon).toFixed(2);
 }
 
 function filterData(body, offset = 0, iter = 3) {
@@ -84,6 +137,6 @@ function KtoC(temp) {
 }
 
 function getUnixTime(time, offset) {
-  // time = time.subtract(2, "second"); //openweatherAPI server is late 2seconds
+  time = time.subtract(2, "second"); //openweatherAPI server is late 2seconds
   return Math.floor(time.subtract(offset, "day") / 1000);
 }

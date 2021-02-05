@@ -17,7 +17,7 @@ exports.getHistory = async (time, location, getUnixTime) => {
   ]);
   if (time.hour() >= 9) {
     const secondYesterdays = await rqHistory(location, unixTime.twoDayAgo);
-    yesterdays = [...yesterdays, ...secondYesterdays];
+    yesterdays = [...secondYesterdays, ...yesterdays];
   }
 
   return { yesterdays, befores };
@@ -62,7 +62,7 @@ async function rqForecasts(location) {
 
   return {
     current: result.current,
-    forecasts: result.hourly,
+    tomorrows: result.hourly,
     daily: result.daily,
   };
 }
