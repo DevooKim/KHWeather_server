@@ -1,3 +1,15 @@
+const dayjs = require("dayjs");
+const UTC = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
+
+dayjs.extend(UTC);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Seoul");
+
+exports.getDate = () => {
+  return dayjs;
+};
+
 exports.parseData = (data) => {
   const a = data.yData.length === 8 ? 8 : 13;
   const b = 13 - a;
@@ -9,17 +21,17 @@ exports.parseData = (data) => {
   const todays = [
     ...data.yData.slice(a, d),
     ...data.bData.slice(b, f),
-    ...data.fData.slice(0, g),
+    ...data.tData.slice(0, g),
   ];
-  const tomorrows = [...data.fData.slice(g, g + 8)];
+  const tomorrows = [...data.tData.slice(g, g + 8)];
 
   const daily = data.dData;
   const current = data.cData;
 
-  return { yesterdays, todays, tomorrows, daily, current };
+  return { lastUpdate: data.lastUpdate, yesterdays, todays, tomorrows, daily, current };
 };
 
-exports.filterData = (dayjs, body, offset = 0, iter = 3) => {
+exports.filterData = (body, offset = 0, iter = 3) => {
   const result = [];
   try {
     for (let i = offset; i < body.length; i += iter) {
