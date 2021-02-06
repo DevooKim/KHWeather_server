@@ -37,6 +37,8 @@ exports.parseToCombineArray = (data) => {
   const d = data.bData.length;
   const e = 8 - (c - a) - (d - b);
 
+  console.log(data.yData.length, data.bData.length, data.tData.length);
+
   //yesterdays
   const yesterdays = setCombine(data.yData, 5, a);
   setCombine(data.bData, 0, b, yesterdays);
@@ -45,6 +47,7 @@ exports.parseToCombineArray = (data) => {
   const todays = setCombine(data.yData, a, c);
   setCombine(data.bData, b, d, todays);
   setCombine(data.tData, 0, e, todays);
+  console.log(c, data.yData.slice(a, c));
 
   //tomorrows
   const tomorrows = setCombine(data.tData, e, e + 8);

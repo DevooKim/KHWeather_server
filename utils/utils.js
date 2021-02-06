@@ -2,10 +2,12 @@ const dayjs = require("dayjs");
 const UTC = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const toObject = require("dayjs/plugin/toObject");
+const weekday = require("dayjs/plugin/weekday");
 
 dayjs.extend(UTC);
 dayjs.extend(timezone);
 dayjs.extend(toObject);
+dayjs.extend(weekday);
 dayjs.tz.setDefault("Asia/Seoul");
 
 exports.getDate = () => {
@@ -19,7 +21,10 @@ exports.filterData = (body, offset = 0, iter = 3) => {
       let temp = body[i].temp;
       let feels_like = body[i].feels_like;
       // const dt = dayjs.unix(body[i].dt).tz().format();
-      const dt = dayjs.unix(body[i].dt).tz().toObject();
+      const dt = {
+        ...dayjs.unix(body[i].dt).tz().toObject(),
+        weekday: dayjs.unix(body[i].dt).tz().weekday(),
+      };
 
       if (typeof temp === "object") {
         for (let key in temp) {
