@@ -29,19 +29,7 @@ exports.parseToIndividualObject = (data) => {
 };
 
 exports.parseToCombineArray = (data) => {
-  const combined = {
-    dt: [],
-    temp: [],
-    feels_like: [],
-    humidity: [],
-    clouds: [],
-    visibility: [],
-    rain: [],
-    snow: [],
-    pop: [],
-    weather: [],
-  };
-  const cpCombined = combined;
+  // const cpCombined = combined;
 
   const a = data.yData.length === 8 ? 8 : 13; //한국시간 0시 ~ 9시 => 8
   const b = 13 - a;
@@ -50,36 +38,54 @@ exports.parseToCombineArray = (data) => {
   const e = 8 - (c - a) - (d - b);
 
   //yesterdays
-  setCombine(data.yData, 5, a, cpCombined);
-  setCombine(data.bData, 0, b, cpCombined);
+  const yesterdays = setCombine(data.yData, 5, a);
+  setCombine(data.bData, 0, b, yesterdays);
 
   //todays
-  setCombine(data.yData, a, c, cpCombined);
-  setCombine(data.bData, b, d, cpCombined);
-  setCombine(data.tData, 0, e, cpCombined);
+  const todays = setCombine(data.yData, a, c);
+  setCombine(data.bData, b, d, todays);
+  setCombine(data.tData, 0, e, todays);
 
   //tomorrows
-  setCombine(data.tData, e, e + 8, cpCombined);
+  const tomorrows = setCombine(data.tData, e, e + 8);
 
   return {
     lastUpdate: data.lastUpdate,
-    ...combined,
+    yesterdays,
+    todays,
+    tomorrows,
     daily: data.dData,
     current: data.cData,
   };
 };
 
-const setCombine = (data, start, end, combined) => {
-  for (let i = start; i < end; i++) {
-    combined.dt.push(data[i].dt);
-    combined.temp.push(data[i].temp);
-    combined.feels_like.push(data[i].feels_like);
-    combined.humidity.push(data[i].humidity);
-    combined.clouds.push(data[i].clouds);
-    combined.visibility.push(data[i].visibility);
-    combined.rain.push(data[i].rain);
-    combined.snow.push(data[i].snow);
-    combined.pop.push(data[i].pop);
-    combined.weather.push(data[i].weather);
+const setCombine = (data, start, end, days = undefined) => {
+  if (days === undefined) {
+    days = {
+      dt: [],
+      temp: [],
+      feels_like: [],
+      humidity: [],
+      clouds: [],
+      visibility: [],
+      rain: [],
+      snow: [],
+      pop: [],
+      weather: [],
+    };
   }
+
+  for (let i = start; i < end; i++) {
+    days.dt.push(data[i].dt);
+    days.temp.push(data[i].temp);
+    days.feels_like.push(data[i].feels_like);
+    days.humidity.push(data[i].humidity);
+    days.clouds.push(data[i].clouds);
+    days.visibility.push(data[i].visibility);
+    days.rain.push(data[i].rain);
+    days.snow.push(data[i].snow);
+    days.pop.push(data[i].pop);
+    days.weather.push(data[i].weather);
+  }
+  return days;
 };
