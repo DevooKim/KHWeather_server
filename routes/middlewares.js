@@ -40,7 +40,6 @@ exports.getWeathers = async (req, res, next) => {
   const dData = filterData(daily, 0, 1);
   const cData = filterData([current]);
 
-  // console.log(yData);
   req.filterData = {
     yData,
     bData,
