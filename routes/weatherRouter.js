@@ -15,6 +15,7 @@ router.use("/:lat/:lon", isCache, getWeathers, async (req, res, next) => {
 
 router.get("/:lat/:lon", (req, res) => {
   const weathers = parseToIndividualObject(req.filterData);
+
   setCache(req.key, weathers);
 
   res.send(weathers);
