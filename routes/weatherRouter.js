@@ -13,7 +13,7 @@ router.use("/:lat/:lon", isCache, getWeathers, async (req, res, next) => {
   next();
 });
 
-router.get("/:lat/:lon", (req, res) => {
+router.get("/:lat/:lon/default", (req, res) => {
   const weathers = parseToIndividualObject(req.filterData);
 
   setCache(req.key, weathers);
