@@ -1,4 +1,5 @@
 const redis = require("redis");
+const winston = require("../../config/winston");
 
 const client = redis.createClient(
   process.env.REDIS_PORT,
