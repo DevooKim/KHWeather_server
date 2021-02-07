@@ -1,31 +1,30 @@
-exports.parseData = (data) => {
-  const a = data.yData.length === 8 ? 8 : 13;
-  const b = 13 - a;
-  const d = a === 8 ? a : data.yData.length;
-  const f = data.bData.length;
-  const g = 8 - (d - a) - (f - b);
+const dayjs = require("dayjs");
+const UTC = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
+const toObject = require("dayjs/plugin/toObject");
+const weekday = require("dayjs/plugin/weekday");
 
-  const yesterdays = [...data.yData.slice(5, a), ...data.bData.slice(0, b)];
-  const todays = [
-    ...data.yData.slice(a, d),
-    ...data.bData.slice(b, f),
-    ...data.fData.slice(0, g),
-  ];
-  const tomorrows = [...data.fData.slice(g, g + 8)];
+dayjs.extend(UTC);
+dayjs.extend(timezone);
+dayjs.extend(toObject);
+dayjs.extend(weekday);
+dayjs.tz.setDefault("Asia/Seoul");
 
-  const daily = data.dData;
-  const current = data.cData;
-
-  return { yesterdays, todays, tomorrows, daily, current };
+exports.getDate = () => {
+  return dayjs;
 };
 
-exports.filterData = (dayjs, body, offset = 0, iter = 3) => {
+exports.filterData = (body, offset = 0, iter = 3) => {
   const result = [];
   try {
     for (let i = offset; i < body.length; i += iter) {
       let temp = body[i].temp;
       let feels_like = body[i].feels_like;
-      const dt = dayjs.unix(body[i].dt).tz().format();
+      // const dt = dayjs.unix(body[i].dt).tz().format();
+      const dt = {
+        ...dayjs.unix(body[i].dt).tz().toObject(),
+        weekday: dayjs.unix(body[i].dt).tz().weekday(),
+      };
 
       if (typeof temp === "object") {
         for (let key in temp) {
