@@ -10,6 +10,7 @@ exports.isCache = (req, res, next) => {
   const key = coord + type[3];
   req.key = key;
 
+  winston.info(`type: ${type[3]} --------------------------`);
   winston.info(`check cache>> lat: ${req.params.lat} lon: ${req.params.lon}`);
   client.hgetall(key, (err, obj) => {
     if (err) throw err;

@@ -3,6 +3,7 @@ const UTC = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const toObject = require("dayjs/plugin/toObject");
 const weekday = require("dayjs/plugin/weekday");
+const winston = require("../config/winston");
 
 dayjs.extend(UTC);
 dayjs.extend(timezone);
@@ -39,7 +40,7 @@ exports.filterData = (body, offset = 0, iter = 3) => {
       result.push({ ...body[i], dt, temp, feels_like });
     }
   } catch (error) {
-    console.error(error);
+    winston.error(error);
     throw new Error(error);
   }
   return result;
