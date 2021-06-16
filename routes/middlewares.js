@@ -6,11 +6,9 @@ const client = require("./config/client");
 
 exports.isCache = (req, res, next) => {
   const coord = getKey(req.params.lat, req.params.lon);
-  const type = req._parsedUrl.path.split("/");
-  const key = coord + type[3];
+  const key = coord;
   req.key = key;
 
-  winston.info(`type: ${type[3]} --------------------------`);
   winston.info(`check cache>> lat: ${req.params.lat} lon: ${req.params.lon}`);
   client.hgetall(key, (err, obj) => {
     if (err) throw err;
@@ -30,10 +28,7 @@ exports.getWeathers = async (req, res, next) => {
   const { lat, lon } = req.params;
   const location = { lat: lat, lon: lon };
 
-  const [history, future] = await Promise.all([
-    getHistory(time, location, getUnixTime),
-    getForecasts(location),
-  ]);
+  const [history, future] = await Promise.all([getHistory(time, location, getUnixTime), getForecasts(location)]);
 
   const { yesterdays, befores } = history;
   const { current, tomorrows, daily } = future;

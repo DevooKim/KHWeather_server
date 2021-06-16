@@ -1,36 +1,4 @@
-exports.parseToIndividualObject = (data) => {
-  /*
-    yesterdays: yData일부 + bData일부(옵션)
-    todays: 남은 yData + 남은 bData + tData일부
-    tomorrows: 남은 tData
-   */
-  const a = data.yData.length === 8 ? 8 : 13; //한국시간 0시 ~ 9시 => 8
-  const b = 13 - a;
-  const c = a === 8 ? a : data.yData.length;
-  const d = data.bData.length;
-  const e = 8 - (c - a) - (d - b);
-
-  const yesterdays = [...data.yData.slice(5, a), ...data.bData.slice(0, b)];
-  const todays = [
-    ...data.yData.slice(a, c),
-    ...data.bData.slice(b, d),
-    ...data.tData.slice(0, e),
-  ];
-  const tomorrows = [...data.tData.slice(e, e + 8)];
-
-  return {
-    lastUpdate: data.lastUpdate,
-    yesterdays,
-    todays,
-    tomorrows,
-    daily: data.dData,
-    current: data.cData,
-  };
-};
-
 exports.parseToCombineArray = (data) => {
-  // const cpCombined = combined;
-
   const a = data.yData.length === 8 ? 8 : 13; //한국시간 0시 ~ 9시 => 8
   const b = 13 - a;
   const c = a === 8 ? a : data.yData.length;
