@@ -1,17 +1,18 @@
 const rp = require("request-promise-native");
 const env = require("../../config/config");
+const { getUnixTime } = require("../../utils/utils");
 env();
 
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
-exports.getHistory = async (time, location, getUnixTime) => {
+exports.getHistory = async (time, location) => {
   const unixTime = {
     today: getUnixTime(time, 0),
     yesterday: getUnixTime(time, 1),
     twoDayAgo: getUnixTime(time, 2),
   };
 
-  let [befores, yesterdays] = await Promise.all([
+  let [untilNow, yesterdays] = await Promise.all([
     rqHistory(location, unixTime.today),
     rqHistory(location, unixTime.yesterday),
   ]);
@@ -20,7 +21,7 @@ exports.getHistory = async (time, location, getUnixTime) => {
     yesterdays = [...secondYesterdays, ...yesterdays];
   }
 
-  return { yesterdays, befores };
+  return { yesterdays, untilNow };
 };
 
 exports.getForecasts = async (location) => {

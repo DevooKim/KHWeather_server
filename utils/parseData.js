@@ -1,34 +1,39 @@
+//UTC 2일전 15~24시 + UTC 1일전 0~15시 = GMT 1일전 0~24시
+//UTC 1일전 15~24시 = GMT 당일 0~9시
+//UTC 당일 0~15시 = GMT 당일 9~24시
+//UTC 당일 15~24시 = GMT 1일후 0~9시
+//UTC 1일후 0~15시 = GMT 1일후 9~24시
 exports.parseToCombineArray = (data) => {
-  const a = data.yData.length === 8 ? 8 : 13; //한국시간 0시 ~ 9시 => 8
+  const { yesterdayData, untilNowData, tomorrowData, dailyData, currentData, lastUpdate } = data;
+  const a = yesterdayData.length === 8 ? 8 : 13;
   const b = 13 - a;
-  const c = a === 8 ? a : data.yData.length;
-  const d = data.bData.length;
+  const c = a === 8 ? a : yesterdayData.length;
+  const d = untilNowData.length;
   const e = 8 - (c - a) - (d - b);
 
   //yesterdays
-  const yesterdays = setCombine(data.yData, 5, a);
-  setCombine(data.bData, 0, b, yesterdays);
+  const yesterdays = setCombine(yesterdayData, 5, a);
+  setCombine(untilNowData, 0, b, yesterdays);
 
   //todays
-  const todays = setCombine(data.yData, a, c);
-  setCombine(data.bData, b, d, todays);
-  setCombine(data.tData, 0, e, todays);
+  const todays = setCombine(yesterdayData, a, c);
+  setCombine(untilNowData, b, d, todays);
+  setCombine(tomorrowData, 0, e, todays);
 
   //tomorrows
-  const tomorrows = setCombine(data.tData, e, e + 8);
-
+  const tomorrows = setCombine(tomorrowData, e, e + 8);
   return {
-    lastUpdate: data.lastUpdate,
+    lastUpdate,
     yesterdays,
     todays,
     tomorrows,
-    daily: data.dData,
-    current: data.cData,
+    daily: dailyData,
+    current: currentData,
   };
 };
 
 const setCombine = (data, start, end, days = undefined) => {
-  if (days === undefined) {
+  if (!days) {
     days = {
       dt: [],
       temp: [],
@@ -42,7 +47,6 @@ const setCombine = (data, start, end, days = undefined) => {
       weather: [],
     };
   }
-
   for (let i = start; i < end; i++) {
     days.dt.push(data[i].dt);
     days.temp.push(data[i].temp);
