@@ -11,15 +11,10 @@ dayjs.extend(toObject);
 dayjs.extend(weekday);
 dayjs.tz.setDefault("Asia/Seoul");
 
-// exports.getDate = () => {
-// return dayjs;
-// };
-
 exports.filterData = (data, offset = 0, iter = 3) => {
   const result = [];
   try {
     for (let i = offset; i < data.length; i += iter) {
-      // const dt = dayjs.unix(data[i].dt).tz().format();
       const dt = {
         ...dayjs.unix(data[i].dt).tz().toObject(),
         weekday: dayjs.unix(data[i].dt).tz().weekday(),
@@ -47,11 +42,6 @@ exports.filterData = (data, offset = 0, iter = 3) => {
   return result;
 };
 
-exports.getUnixTime = (time, offset) => {
-  // time = time.subtract(2, "second"); //openweatherAPI server is late 2seconds
-  return Math.floor(time.subtract(offset, "day") / 1000);
-};
-
-function KtoC(temp) {
+const KtoC = (temp) => {
   return Math.round(temp - 273.15);
 }
