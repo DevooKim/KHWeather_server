@@ -3,7 +3,8 @@ const morgan = require("morgan");
 const path = require("path");
 const cors = require("cors");
 
-const weatherRouter = require("./routes/weatherRouter");
+// const weatherRouter = require("./routes/weatherRouter");
+const router = require('./routes')
 
 const env = require("./config/config");
 env();
@@ -17,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
-app.use("/weather", weatherRouter);
+app.use("/", router);
 
 app.use((req, res, next) => {
   const error = new Error("no Router");

@@ -5,10 +5,10 @@ const { getDate } = require("../utils/utils");
 const client = require("./config/client");
 
 exports.isCache = (req, res, next) => {
-  const key = getKey(req.params.lat, req.params.lon);
+  const key = getKey(req.query.lat, req.query.lon);
   req.key = key;
 
-  winston.info(`check cache>> lat: ${req.params.lat} lon: ${req.params.lon}`);
+  winston.info(`check cache>> lat: ${req.query.lat} lon: ${req.query.lon}`);
   client.hgetall(key, (err, obj) => {
     if (err) throw err;
     if (obj) {

@@ -11,38 +11,41 @@ dayjs.extend(toObject);
 dayjs.extend(weekday);
 dayjs.tz.setDefault("Asia/Seoul");
 
-exports.getDate = () => {
-  return dayjs;
-};
+// exports.getDate = () => {
+// return dayjs;
+// };
 
-exports.filterData = (body, offset = 0, iter = 3) => {
+exports.filterData = (data, offset = 0, iter = 3) => {
   const result = [];
   try {
-    for (let i = offset; i < body.length; i += iter) {
-      let temp = body[i].temp;
-      let feels_like = body[i].feels_like;
-      // const dt = dayjs.unix(body[i].dt).tz().format();
+    for (let i = offset; i < data.length; i += iter) {
+      // const dt = dayjs.unix(data[i].dt).tz().format();
       const dt = {
-        ...dayjs.unix(body[i].dt).tz().toObject(),
-        weekday: dayjs.unix(body[i].dt).tz().weekday(),
+        ...dayjs.unix(data[i].dt).tz().toObject(),
+        weekday: dayjs.unix(data[i].dt).tz().weekday(),
       };
+      console.log(dayjs.unix(data[i].dt).hour())
+
+      let temp = data[i].temp;
+      let feelsLike = data[i].feels_like;
 
       if (typeof temp === "object") {
         for (let key in temp) {
           temp[key] = KtoC(temp[key]);
-          feels_like[key] = KtoC(feels_like[key]);
+          feelsLike[key] = KtoC(feelsLike[key]);
         }
       } else {
         temp = KtoC(temp);
-        feels_like = KtoC(feels_like);
+        feelsLike = KtoC(feelsLike);
       }
 
-      result.push({ ...body[i], dt, temp, feels_like });
+      result.push({ ...data[i], dt, temp, feelsLike });
     }
   } catch (error) {
     winston.error(error);
     throw new Error(error);
   }
+  console.log('---')
   return result;
 };
 

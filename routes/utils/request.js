@@ -35,10 +35,11 @@ async function rqHistory(location, time) {
       lat: location.lat,
       lon: location.lon,
       dt: time,
-      appid: apiKey,
+      // appid: apiKey,
+      appid: location.appid,
     },
   });
-
+  console.log(response)
   const data = JSON.parse(response);
 
   if (data.hourly === undefined) {
@@ -55,11 +56,12 @@ async function rqForecasts(location) {
       lat: location.lat,
       lon: location.lon,
       exclude: "minutely,alerts",
-      appid: apiKey,
+      // appid: apiKey,
+      appid: location.appid,
     },
   });
-
   const result = JSON.parse(data);
+  console.log(result)
 
   return {
     current: result.current,
