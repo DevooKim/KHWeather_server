@@ -24,7 +24,6 @@ exports.filterData = (data, offset = 0, iter = 3) => {
         ...dayjs.unix(data[i].dt).tz().toObject(),
         weekday: dayjs.unix(data[i].dt).tz().weekday(),
       };
-      console.log(dayjs.unix(data[i].dt).hour())
 
       let temp = data[i].temp;
       let feelsLike = data[i].feels_like;
@@ -45,7 +44,6 @@ exports.filterData = (data, offset = 0, iter = 3) => {
     winston.error(error);
     throw new Error(error);
   }
-  console.log('---')
   return result;
 };
 

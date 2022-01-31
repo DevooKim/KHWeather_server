@@ -10,18 +10,13 @@ exports.parseToCombineArray = (data) => {
   const c = a === 8 ? a : untilYesterdayPastData.length;
   const d = untilTodayPastData.length;
   const e = 8 - (c - a) - (d - b);
-  console.log(a, b, c, d, e)
   //yesterdays
   const yesterdays = setCombine(untilYesterdayPastData, 5, a);
-  console.log(1)
   setCombine(untilTodayPastData, 0, b, yesterdays, 2);
-  console.log(2)
 
   //todays
   const todays = setCombine(untilYesterdayPastData, a, c);
-  console.log(3)
   setCombine(untilTodayPastData, b, d, todays);
-  console.log(4)
   setCombine(hourlyData, 0, e, todays);
 
   //tomorrows

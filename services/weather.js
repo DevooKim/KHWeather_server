@@ -40,7 +40,8 @@ const getPastWeather = async (date, coords) => {
           ...coords,
           date: twoDayAgo,
         });
-        data.concat(twoDayAgoData);
+        // data.concat(twoDayAgoData);
+        data = [...twoDayAgoData, ...data]
       }
       return data;
     })(),

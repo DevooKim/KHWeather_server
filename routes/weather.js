@@ -14,7 +14,7 @@ const router = express.Router();
 const apiKey = "00c066bda0c6f600f2e440be2165e693";
 
 // router.get("/week", isCache, getWeathers, async (req, res) => {
-router.get("/", async (req, res) => {
+router.get("/", isCache, async (req, res) => {
   const date = dayjs();
   const offset = 3 - (date.hour() % 3);
 
@@ -36,7 +36,6 @@ router.get("/", async (req, res) => {
   const paredWeather = parseToCombineArray(weathers);
   setCache(req.key, paredWeather);
 
-  // res.json(paredWeather);
   res.json(weathers.untilTodayPastData)
 });
 
