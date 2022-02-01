@@ -6,18 +6,16 @@ const weekday = require("dayjs/plugin/weekday");
 const winston = require("../config/winston");
 
 dayjs.extend(UTC);
-dayjs.extend(timezone);
-dayjs.extend(toObject);
 dayjs.extend(weekday);
-dayjs.tz.setDefault("Asia/Seoul");
 
 exports.filterData = (data, offset = 0, iter = 3) => {
   const result = [];
   try {
     for (let i = offset; i < data.length; i += iter) {
       const dt = {
-        ...dayjs.unix(data[i].dt).tz().toObject(),
-        weekday: dayjs.unix(data[i].dt).tz().weekday(),
+        // ...dayjs.unix(data[i].dt).tz().toObject(),
+        date: dayjs.unix(data[i].dt),
+        weekday: dayjs.unix(data[i].dt).weekday(),
       };
 
       let temp = data[i].temp;

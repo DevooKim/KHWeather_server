@@ -27,13 +27,12 @@ router.get("/", isCache, async (req, res) => {
     untilTodayPastData: filterData(untilTodayPastWeather),
     hourlyData: filterData(hourly, offset),
     dailyData: filterData(daily, 0, 1),
-    currentData: filterData([current]),
+    currentData: filterData([current])[0],
   };
 
   const paredWeather = parseToCombineArray(weathers);
   setCache(req.key, paredWeather);
-
-  res.json(weathers.untilTodayPastData)
+  res.send({weather: paredWeather, lastUpdate: date})
 });
 
 module.exports = router;
